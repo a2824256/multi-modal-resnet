@@ -11,29 +11,30 @@ import paddle.nn as nn
 import paddle.nn.functional as F
 from paddle.vision.models import resnet34
 
-import transforms as trans
+# import transforms as trans
+import paddle.vision.transforms as trans
 
-import warnings
-warnings.filterwarnings('ignore')
+# import warnings
+# warnings.filterwarnings('ignore')
 
 from dataset import GAMMA_sub1_dataset
 from model import Model
 
-batchsize = 4  # 4 patients per iter, i.e, 20 steps / epoch
+batchsize = 1  # 4 patients per iter, i.e, 20 steps / epoch
 oct_img_size = [512, 512]
 image_size = 256
 iters = 1000  # For demonstration purposes only, far from reaching convergence
 val_ratio = 0.2  # 80 / 20
-trainset_root = "./"
+trainset_root = "E:\\multi-modal-resnet\\training_data\\multi-modality_images"
+trainset_label = "./training_data/glaucoma_grading_training_GT.xlsx"
 test_root = ""
-num_workers = 4
+num_workers = 0
 init_lr = 1e-4
 optimizer_type = "adam"
 
 filelists = os.listdir(trainset_root)
 train_filelists, val_filelists = train_test_split(filelists, test_size=val_ratio, random_state=42)
 print("Total Nums: {}, train: {}, val: {}".format(len(filelists), len(train_filelists), len(val_filelists)))
-
 
 
 
@@ -46,13 +47,13 @@ img_train_transforms = trans.Compose([
 ])
 
 oct_train_transforms = trans.Compose([
-    trans.CenterCrop([256] + oct_img_size),
+    # trans.CenterCrop([256] + oct_img_size),
     trans.RandomHorizontalFlip(),
     trans.RandomVerticalFlip()
 ])
 
 img_val_transforms = trans.Compose([
-    trans.CropCenterSquare(),
+    # trans.CropCenterSquare(),
     trans.Resize((image_size, image_size))
 ])
 
@@ -63,12 +64,13 @@ oct_val_transforms = trans.Compose([
 _train = GAMMA_sub1_dataset(dataset_root=trainset_root,
                         img_transforms=img_train_transforms,
                         oct_transforms=oct_train_transforms,
-                        label_file='???.xlsx')
+                        label_file=trainset_label, mode='train')
 
 _val = GAMMA_sub1_dataset(dataset_root=trainset_root,
                         img_transforms=img_val_transforms,
-                        oct_transforms=oct_val_transforms,
-                        label_file='???.xlsx')
+                        # oct_transforms=oct_val_transforms,
+                        oct_transforms=None,
+                        label_file=trainset_label, mode='val')
 
 
 
@@ -148,15 +150,15 @@ img_train_transforms = trans.Compose([
     trans.RandomVerticalFlip(),
     trans.RandomRotation(30)
 ])
-
 oct_train_transforms = trans.Compose([
+    # 变成[256, 512, 512]的状态
     trans.CenterCrop([256] + oct_img_size),
     trans.RandomHorizontalFlip(),
     trans.RandomVerticalFlip()
 ])
 
 img_val_transforms = trans.Compose([
-    trans.CropCenterSquare(),
+    # trans.CropCenterSquare(),
     trans.Resize((image_size, image_size))
 ])
 
@@ -168,13 +170,13 @@ train_dataset = GAMMA_sub1_dataset(dataset_root=trainset_root,
                         img_transforms=img_train_transforms,
                         oct_transforms=oct_train_transforms,
                         filelists=train_filelists,
-                        label_file='???.xlsx')
+                        label_file=trainset_label)
 
 val_dataset = GAMMA_sub1_dataset(dataset_root=trainset_root,
                         img_transforms=img_val_transforms,
                         oct_transforms=oct_val_transforms,
                         filelists=val_filelists,
-                        label_file='???.xlsx')
+                        label_file=trainset_label)
 
 
 train_loader = paddle.io.DataLoader(

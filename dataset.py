@@ -3,6 +3,20 @@ import os
 import cv2
 import numpy as np
 import pandas as pd
+import PIL.Image as Image
+
+
+def crop(img, top, left, height, width):
+    return img[:, top:top + height, left:left + width]
+
+
+def center_crop(img, output_size):
+
+    _, h, w = img.shape
+    _, th, tw = output_size
+    i = int(round((h - th) / 2.))
+    j = int(round((w - tw) / 2.))
+    return crop(img, i, j, th, tw)
 
 class GAMMA_sub1_dataset(paddle.io.Dataset):
     """
@@ -45,7 +59,7 @@ class GAMMA_sub1_dataset(paddle.io.Dataset):
         fundus_img_path = os.path.join(self.dataset_root, real_index, real_index + ".jpg")
         oct_series_list = sorted(os.listdir(os.path.join(self.dataset_root, real_index, real_index)),
                                  key=lambda x: int(x.strip("_")[0]))
-
+        # print(fundus_img_path)
         fundus_img = cv2.imread(fundus_img_path)[:, :, ::-1]  # BGR -> RGB
         oct_series_0 = cv2.imread(os.path.join(self.dataset_root, real_index, real_index, oct_series_list[0]),
                                   cv2.IMREAD_GRAYSCALE)
@@ -57,6 +71,10 @@ class GAMMA_sub1_dataset(paddle.io.Dataset):
 
         if self.img_transforms is not None:
             fundus_img = self.img_transforms(fundus_img)
+            # print(fundus_img.shape)
+            # print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1')
+        oct_img = oct_img.squeeze(-1)
+        oct_img = center_crop(oct_img, [256, 512, 512])
         if self.oct_transforms is not None:
             oct_img = self.oct_transforms(oct_img)
 
@@ -65,7 +83,9 @@ class GAMMA_sub1_dataset(paddle.io.Dataset):
         # oct_img = (oct_img / 255.).astype("float32")
 
         fundus_img = fundus_img.transpose(2, 0, 1)  # H, W, C -> C, H, W
-        oct_img = oct_img.squeeze(-1)  # D, H, W, 1 -> D, H, W
+        # print(fundus_img.shape)
+        # print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1')
+        # oct_img = oct_img.squeeze(-1)  # D, H, W, 1 -> D, H, W
 
         if self.mode == 'test':
             return fundus_img, oct_img, real_index

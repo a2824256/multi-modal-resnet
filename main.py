@@ -14,16 +14,16 @@ from paddle.vision.models import resnet34
 # import transforms as trans
 import paddle.vision.transforms as trans
 
-# import warnings
-# warnings.filterwarnings('ignore')
+import warnings
+warnings.filterwarnings('ignore')
 
 from dataset import GAMMA_sub1_dataset
 from model import Model
 
-batchsize = 1  # 4 patients per iter, i.e, 20 steps / epoch
+batchsize = 4  # 4 patients per iter, i.e, 20 steps / epoch
 oct_img_size = [512, 512]
 image_size = 256
-iters = 1000  # For demonstration purposes only, far from reaching convergence
+iters = 2000  # For demonstration purposes only, far from reaching convergence
 val_ratio = 0.2  # 80 / 20
 trainset_root = "E:\\multi-modal-resnet\\training_data\\multi-modality_images"
 trainset_label = "./training_data/glaucoma_grading_training_GT.xlsx"

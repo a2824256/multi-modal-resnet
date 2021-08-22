@@ -13,16 +13,20 @@ from paddle.vision.models import resnet34
 
 # import transforms as trans
 import paddle.vision.transforms as trans
+from ppcls.utils import logger
 
 import warnings
 warnings.filterwarnings('ignore')
 
 from dataset import GAMMA_sub1_dataset
-from model import Model
+from model import Model, Model2
+from ResNet200_vd_model import ResNet200_vd_model
 
+logger.init_logger()
 batchsize = 4  # 4 patients per iter, i.e, 20 steps / epoch
 oct_img_size = [512, 512]
 image_size = 256
+oct_image_size = 512
 iters = 2000  # For demonstration purposes only, far from reaching convergence
 val_ratio = 0.2  # 80 / 20
 trainset_root = "E:\\multi-modal-resnet\\training_data\\multi-modality_images"
@@ -39,8 +43,7 @@ print("Total Nums: {}, train: {}, val: {}".format(len(filelists), len(train_file
 
 
 img_train_transforms = trans.Compose([
-    trans.RandomResizedCrop(
-        image_size, scale=(0.90, 1.1), ratio=(0.90, 1.1)),
+    trans.RandomResizedCrop(image_size, scale=(0.90, 1.1), ratio=(0.90, 1.1)),
     trans.RandomHorizontalFlip(),
     trans.RandomVerticalFlip(),
     trans.RandomRotation(30)
@@ -49,7 +52,7 @@ img_train_transforms = trans.Compose([
 oct_train_transforms = trans.Compose([
     # trans.CenterCrop([256] + oct_img_size),
     trans.RandomHorizontalFlip(),
-    trans.RandomVerticalFlip()
+    # trans.RandomVerticalFlip()
 ])
 
 img_val_transforms = trans.Compose([
@@ -57,9 +60,9 @@ img_val_transforms = trans.Compose([
     trans.Resize((image_size, image_size))
 ])
 
-oct_val_transforms = trans.Compose([
-    trans.CenterCrop([256] + oct_img_size)
-])
+# oct_val_transforms = trans.Compose([
+#     trans.CenterCrop([256] + oct_img_size)
+# ])
 
 _train = GAMMA_sub1_dataset(dataset_root=trainset_root,
                         img_transforms=img_train_transforms,
@@ -150,11 +153,13 @@ img_train_transforms = trans.Compose([
     trans.RandomVerticalFlip(),
     trans.RandomRotation(30)
 ])
+
 oct_train_transforms = trans.Compose([
     # 变成[256, 512, 512]的状态
-    trans.CenterCrop([256] + oct_img_size),
+    trans.Resize((oct_image_size, oct_image_size)),
+    # trans.CenterCrop([256] + oct_img_size),
     trans.RandomHorizontalFlip(),
-    trans.RandomVerticalFlip()
+    # trans.RandomVerticalFlip()
 ])
 
 img_val_transforms = trans.Compose([
@@ -163,7 +168,7 @@ img_val_transforms = trans.Compose([
 ])
 
 oct_val_transforms = trans.Compose([
-    trans.CenterCrop([256] + oct_img_size)
+    trans.Resize((oct_image_size, oct_image_size)),
 ])
 
 train_dataset = GAMMA_sub1_dataset(dataset_root=trainset_root,
@@ -195,10 +200,13 @@ val_loader = paddle.io.DataLoader(
     use_shared_memory=False
 )
 
-model = Model()
+model = ResNet200_vd_model()
 
 if optimizer_type == "adam":
-    optimizer = paddle.optimizer.Adam(init_lr, parameters=model.parameters())
+    scheduler = paddle.optimizer.lr.PiecewiseDecay(boundaries=[100, 1000, 1500],
+                                                   values=[init_lr, init_lr * 0.1, init_lr * 0.01, init_lr * 0.001],
+                                                   verbose=True)
+    optimizer = paddle.optimizer.Adam(scheduler, parameters=model.parameters())
 
 criterion = nn.CrossEntropyLoss()
 

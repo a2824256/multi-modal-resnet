@@ -1,6 +1,7 @@
 import paddle
 import paddle.nn as nn
 from paddle.vision.models import resnet34, resnet101, resnet50, resnet152
+from ppcls.arch.backbone.model_zoo.levit import LeViT_384
 
 
 class Model(nn.Layer):
@@ -56,4 +57,3 @@ class Model2(nn.Layer):
         output = self.output_branch(logit)
 
         return output
-

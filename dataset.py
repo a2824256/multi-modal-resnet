@@ -66,9 +66,9 @@ class GAMMA_sub1_dataset(paddle.io.Dataset):
         oct_img = np.zeros((len(oct_series_list), oct_series_0.shape[0], oct_series_0.shape[1], 1), dtype="uint8")
 
         for k, p in enumerate(oct_series_list):
-            oct_img[k] = cv2.imread(
-                os.path.join(self.dataset_root, real_index, real_index, p), cv2.IMREAD_GRAYSCALE)[..., np.newaxis]
-            oct_img[k] = cv2.fastNlMeansDenoising(oct_img[k], None, 15, 5, 25)
+            img = cv2.imread(
+                os.path.join(self.dataset_root, real_index, real_index, p), cv2.IMREAD_GRAYSCALE)
+            oct_img[k] = cv2.fastNlMeansDenoising(img, None, 15, 5, 25)[..., np.newaxis]
 
         if self.img_transforms is not None:
             fundus_img = self.img_transforms(fundus_img)

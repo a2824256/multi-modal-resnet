@@ -92,7 +92,7 @@ def train(model, iters, train_dataloader, val_dataloader, optimizer, criterion, 
             fundus_imgs = (data[0] / 255.).astype("float32")
             oct_imgs = (data[1] / 255.).astype("float32")
             labels = data[2].astype('int64')
-
+            print(oct_imgs.shape)
             logits = model(fundus_imgs, oct_imgs)
             loss = criterion(logits, labels)
             # acc = paddle.metric.accuracy(input=logits, label=labels.reshape((-1, 1)), k=1)

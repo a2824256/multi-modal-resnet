@@ -59,7 +59,6 @@ class GAMMA_sub1_dataset(paddle.io.Dataset):
         fundus_img_path = os.path.join(self.dataset_root, real_index, real_index + ".jpg")
         oct_series_list = sorted(os.listdir(os.path.join(self.dataset_root, real_index, real_index)),
                                  key=lambda x: int(x.strip("_")[0]))
-        # print(fundus_img_path)
         fundus_img = cv2.imread(fundus_img_path)[:, :, ::-1]  # BGR -> RGB
         oct_series_0 = cv2.imread(os.path.join(self.dataset_root, real_index, real_index, oct_series_list[0]),
                                   cv2.IMREAD_GRAYSCALE)
@@ -72,8 +71,6 @@ class GAMMA_sub1_dataset(paddle.io.Dataset):
 
         if self.img_transforms is not None:
             fundus_img = self.img_transforms(fundus_img)
-            # print(fundus_img.shape)
-            # print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1')
         oct_img = oct_img.squeeze(-1)
         # oct_img = center_crop(oct_img, [256, 512, 512])
         if self.oct_transforms is not None:
